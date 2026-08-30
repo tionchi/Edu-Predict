@@ -3,12 +3,48 @@ import "./App.css";
 
 type PredictionResponse = {
   predicted_score?: number;
+  model?: ModelKey;
 };
+
+type ModelKey = "gradient_boosting" | "random_forest" | "linear_regression";
+
+type ModelOption = {
+  value: ModelKey;
+  label: string;
+  description: string;
+  mae: string;
+  r2: string;
+};
+
+const modelOptions: ModelOption[] = [
+  {
+    value: "gradient_boosting",
+    label: "Gradient Boosting",
+    description: "Balanced ensemble",
+    mae: "0.57",
+    r2: "0.810",
+  },
+  {
+    value: "random_forest",
+    label: "Random Forest",
+    description: "Flexible ensemble",
+    mae: "1.05",
+    r2: "0.705",
+  },
+  {
+    value: "linear_regression",
+    label: "Linear Regression",
+    description: "Fast and transparent",
+    mae: "0.41",
+    r2: "0.826",
+  },
+];
 
 function App() {
   const [predictedScore, setPredictedScore] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [selectedModel, setSelectedModel] = useState<ModelKey>("gradient_boosting");
 
   const [hoursStudied, setHoursStudied] = useState(20);
   const [attendance, setAttendance] = useState(80);
@@ -37,6 +73,7 @@ function App() {
 
     try {
       const payload = {
+        model: selectedModel,
         Hours_Studied: hoursStudied,
         Attendance: attendance,
         Parental_Involvement: parentalInvolvement,
@@ -88,6 +125,7 @@ function App() {
   const resetForm = () => {
     setPredictedScore(null);
     setError(null);
+    setSelectedModel("gradient_boosting");
     setHoursStudied(20);
     setAttendance(80);
     setPreviousScore(70);
@@ -126,6 +164,8 @@ function App() {
         : predictedScore >= 60
           ? "A promising baseline with room to grow."
           : "This profile may benefit from extra support.";
+  const selectedModelInfo =
+    modelOptions.find((option) => option.value === selectedModel) ?? modelOptions[0];
 
   const profileHighlights = [
     { label: "Hours studied", value: `${hoursStudied}h` },
@@ -212,7 +252,7 @@ function App() {
                 <span className="bar bar-seven" />
               </div>
               <div className="visual-card-footer">
-                <span>Gradient Boosting</span>
+                <span>{selectedModelInfo.label}</span>
                 <span className="visual-footer-dot" />
                 <span>Ready</span>
               </div>
@@ -236,6 +276,43 @@ function App() {
             <div className="card-heading">
               <h2>Student profile</h2>
               <p>Adjust the inputs below to model a student&apos;s profile.</p>
+            </div>
+
+            <div className="model-selector">
+              <div className="selector-header">
+                <div>
+                  <span className="selector-label">Prediction model</span>
+                  <p>Choose the engine for this estimate</p>
+                </div>
+                <span className="selected-model-label">{selectedModelInfo.label}</span>
+              </div>
+              <div className="model-options" role="radiogroup" aria-label="Prediction model">
+                {modelOptions.map((option) => {
+                  const isSelected = selectedModel === option.value;
+
+                  return (
+                    <button
+                      type="button"
+                      className={`model-option ${isSelected ? "is-selected" : ""}`}
+                      key={option.value}
+                      role="radio"
+                      aria-checked={isSelected}
+                      onClick={() => setSelectedModel(option.value)}
+                    >
+                      <span className="model-option-icon" aria-hidden="true">
+                        {option.label.slice(0, 1)}
+                      </span>
+                      <span className="model-option-copy">
+                        <strong>{option.label}</strong>
+                        <span>{option.description}</span>
+                      </span>
+                      <span className="model-option-check" aria-hidden="true">
+                        {isSelected ? "✓" : ""}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
             <div className="form-section">
@@ -495,17 +572,17 @@ function App() {
                 <span className="model-badge">v1.0</span>
               </div>
               <div className="model-intro">
-                <h2>Gradient Boosting</h2>
-                <p>A dependable baseline trained on student performance factors.</p>
+                <h2>{selectedModelInfo.label}</h2>
+                <p>{selectedModelInfo.description} model trained on student performance factors.</p>
               </div>
               <div className="metrics">
                 <div className="metric">
                   <span>Mean absolute error</span>
-                  <strong>0.57</strong>
+                  <strong>{selectedModelInfo.mae}</strong>
                 </div>
                 <div className="metric">
                   <span>R² score</span>
-                  <strong>0.810</strong>
+                  <strong>{selectedModelInfo.r2}</strong>
                 </div>
               </div>
             </section>
