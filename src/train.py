@@ -1,11 +1,10 @@
 import pandas as pd#
 import joblib
 
-from sklearn.model_selection import train_test_split
-from sklearn.linear_model import LinearRegression
+from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.metrics import mean_absolute_error, r2_score
 from sklearn.pipeline import Pipeline
-from sklearn.ensemble import RandomForestRegressor
+from sklearn.ensemble import GradientBoostingRegressor
 
 from preprocessing import create_preprocessor
 
@@ -30,8 +29,10 @@ preprocessor = create_preprocessor()
 #Create ML pipeline
 model = Pipeline([
     ("preprocessor", preprocessor),
-    ("regressor", RandomForestRegressor(
+    ("regressor", GradientBoostingRegressor(
         n_estimators=200,
+        learning_rate=0.05,
+        max_depth=3,
         random_state=42
     ))
 ])
@@ -49,7 +50,6 @@ r2 = r2_score(y_test, predictions)
 #Output
 print("Mean Absolute Error:", mae)
 print("R² Score:", r2)
-print(y.describe())
 
 #saving trained model
 joblib.dump(model, "models/student_performance_model.pkl")
