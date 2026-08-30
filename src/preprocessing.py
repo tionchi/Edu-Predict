@@ -81,3 +81,5 @@ def create_preprocessor():
         ("binary", binary_pipeline, binary_columns),
         ("nominal", nominal_pipeline, nominal_columns)
     ])
+
+    return preprocessor
