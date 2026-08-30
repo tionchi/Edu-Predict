@@ -7,6 +7,23 @@ from sklearn.preprocessing import OrdinalEncoder, OneHotEncoder
 def create_preprocessor():
 
     # -----------------------------------------------
+    # Numeric Columns
+    # ===============================================
+
+    numeric_columns = [
+        "Hours_Studied",
+        "Attendance",
+        "Sleep_Hours",
+        "Previous_Scores",
+        "Tutoring_Sessions",
+        "Physical_Activity"
+    ]
+
+    numeric_pipeline = Pipeline([
+        ("imputer", SimpleImputer(strategy="median"))
+    ])
+
+    # -----------------------------------------------
     # Ordinal Columns
     # ===============================================
 
@@ -77,6 +94,7 @@ def create_preprocessor():
     # ===============================================
 
     preprocessor = ColumnTransformer([
+        ("numeric", numeric_pipeline, numeric_columns),
         ("ordinal", ordinal_pipeline, ordinal_columns),
         ("binary", binary_pipeline, binary_columns),
         ("nominal", nominal_pipeline, nominal_columns)

@@ -3,7 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 #load trained model
-model = joblib.load("models/student_performance_model.pkl")
+model = joblib.load("backend/models/student_performance_model.pkl")
 
 
 #get feature names and importance
@@ -25,6 +25,7 @@ feature_importance["Feature"] = (
     .str.replace("ordinal__", "", regex=False)
     .str.replace("binary__", "", regex=False)
     .str.replace("nominal__", "", regex=False)
+    .str.replace("numeric__", "", regex=False)
     .str.replace("_Yes", "", regex=False)
     .str.replace("_No", "", regex=False)
     .str.replace("_Male", "", regex=False)

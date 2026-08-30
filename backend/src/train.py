@@ -6,7 +6,7 @@ from sklearn.metrics import mean_absolute_error, r2_score
 from sklearn.pipeline import Pipeline
 from sklearn.ensemble import GradientBoostingRegressor
 
-from preprocessing import create_preprocessor
+from backend.src.preprocessing import create_preprocessor
 
 #Load dataset
 df = pd.read_csv("data/StudentPerformanceFactors.csv")
