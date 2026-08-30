@@ -30,29 +30,47 @@ preprocessor = create_preprocessor()
 model = Pipeline([
     ("preprocessor", preprocessor),
     ("regressor", GradientBoostingRegressor(
-        n_estimators=200,
-        learning_rate=0.05,
-        max_depth=3,
         random_state=42
     ))
 ])
 
+#params to test
+param_grid = {
+    "regressor__n_estimators": [100,200,300],
+    "regressor__learning_rate": [0.03, 0.05, 0.1],
+    "regressor__max_depth": [2, 3, 4]
+}
+
+#create gridsearch cv
+grid_search = GridSearchCV(
+    model,
+    param_grid,
+    cv=5,
+    scoring="neg_mean_absolute_error",
+    n_jobs=-1
+)
+
 #Train model
-model.fit(X_train, y_train)
+grid_search.fit(X_train, y_train)
+
+#get best model
+best_model = grid_search.best_estimator_
 
 #Predict
-predictions = model.predict(X_test)
+predictions = best_model.predict(X_test)
 
 #model eval
 mae = mean_absolute_error(y_test, predictions)
 r2 = r2_score(y_test, predictions)
 
 #Output
-print("Mean Absolute Error:", mae)
-print("R² Score:", r2)
+print("Best Parameters:", grid_search.best_params_)
+print("Best CV MAE:", -grid_search.best_score_)
+print("Test MAE:", mae)
+print("Test R² Score:", r2)
 
 #saving trained model
-joblib.dump(model, "models/student_performance_model.pkl")
+joblib.dump(best_model, "models/student_performance_model.pkl")
 print("Model Saved Successfully.")
 
 
