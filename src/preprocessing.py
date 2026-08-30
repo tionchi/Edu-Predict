@@ -1,66 +1,45 @@
-import pandas as pd
+from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline
+from sklearn.impute import SimpleImputer
+from sklearn.preprocessing import OrdinalEncoder, OneHotEncoder
 
-def preprocess_data(df):
-    processed_df = df.copy()
+
+def create_preprocessor():
 
     # -----------------------------------------------
-    # Ordinal
+    # Ordinal Columns
     # ===============================================
-
-    ordinal_mapping = {
-        "Low": 0,
-        "Medium": 1,
-        "High": 2
-    }
 
     ordinal_columns = [
         "Parental_Involvement",
         "Access_to_Resources",
         "Motivation_Level",
         "Family_Income",
-        "Teacher_Quality"
+        "Teacher_Quality",
+        "Parental_Education_Level",
+        "Distance_from_Home"
     ]
 
-    for column in ordinal_columns:
-        processed_df[column] = processed_df[column].map(ordinal_mapping)
+    ordinal_categories = [
+        ["Low", "Medium", "High"],             # Parental_Involvement
+        ["Low", "Medium", "High"],             # Access_to_Resources
+        ["Low", "Medium", "High"],             # Motivation_Level
+        ["Low", "Medium", "High"],             # Family_Income
+        ["Low", "Medium", "High"],             # Teacher_Quality
+        ["High School", "College", "Postgraduate"],  # Education
+        ["Near", "Moderate", "Far"]             # Distance
+    ]
 
-    # Ordinal: Parental Education
-    # ===============================================
-
-    education_mapping = {
-        "High School": 0,
-        "College": 1,
-        "Postgraduate": 2
-    }
-
-    processed_df["Parental_Education_Level"] = (
-        processed_df["Parental_Education_Level"]
-        .map(education_mapping)
-    )
-
-    # Ordinal: Distance from home
-    # ===============================================
-
-    distance_mapping = {
-        "Near": 0,
-        "Moderate": 1,
-        "Far": 2
-    }
-
-    processed_df["Distance_from_Home"] = (
-        processed_df["Distance_from_Home"]
-        .map(distance_mapping)
-    )
-
+    ordinal_pipeline = Pipeline([
+        ("imputer", SimpleImputer(strategy="most_frequent")),
+        ("encoder", OrdinalEncoder(
+            categories=ordinal_categories
+        ))
+    ])
 
     # -----------------------------------------------
     # Binary
     # ===============================================
-
-    binary_mapping = {
-        "No": 0,
-        "Yes": 1
-    }
 
     binary_columns = [
         "Extracurricular_Activities",
@@ -68,10 +47,16 @@ def preprocess_data(df):
         "Learning_Disabilities"
     ]
 
-    for column in binary_columns:
-        processed_df[column] = processed_df[column].map(binary_mapping)
+    binary_pipeline = Pipeline([
+        ("imputer", SimpleImputer(strategy="most_frequent")),
+        ("encoder", OneHotEncoder(
+            drop="if_binary",
+            handle_unknown="ignore"
+        ))
+    ])
 
-    # Nominal: One hot encoding
+    # -----------------------------------------------
+    # Nominal
     # ===============================================
 
     nominal_columns = [
@@ -80,10 +65,19 @@ def preprocess_data(df):
         "Gender"
     ]
 
-    processed_df = pd.get_dummies(
-        processed_df,
-        columns=nominal_columns,
-        dtype=int
-    )
+    nominal_pipeline = Pipeline([
+        ("imputer", SimpleImputer(strategy="most_frequent")),
+        ("encoder", OneHotEncoder(
+            handle_unknown="ignore"
+        ))
+    ])
 
-    return processed_df
+    # -----------------------------------------------
+    # Combination
+    # ===============================================
+
+    preprocessor = ColumnTransformer([
+        ("ordinal", ordinal_pipeline, ordinal_columns),
+        ("binary", binary_pipeline, binary_columns),
+        ("nominal", nominal_pipeline, nominal_columns)
+    ])
