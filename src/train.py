@@ -56,6 +56,23 @@ grid_search.fit(X_train, y_train)
 #get best model
 best_model = grid_search.best_estimator_
 
+#get Feature Importance
+feature_names = best_model.named_steps["preprocessor"].get_feature_names_out()
+importances = best_model.named_steps["regressor"].feature_importances_
+
+feature_importance = pd.DataFrame({
+    "Feature": feature_names,
+    "Importance": importances
+})
+
+feature_importance = feature_importance.sort_values(
+    by="Importance",
+    ascending=False
+)
+
+print("\nFeature Importance:")
+print(feature_importance)
+
 #Predict
 predictions = best_model.predict(X_test)
 
